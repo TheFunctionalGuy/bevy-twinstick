@@ -32,6 +32,7 @@ fn main() {
         .add_startup_system(spawn_enemy)
         // Systems
         .add_system(player_movement)
+        .add_system(camera_lock.after(player_movement))
         // Plugins
         .add_plugins(DefaultPlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
@@ -96,4 +97,14 @@ fn player_movement(keys: Res<Input<KeyCode>>, mut q: Query<&mut Transform, With<
     if keys.pressed(KeyCode::D) {
         player_transform.translation.x += 2.;
     }
+}
+
+fn camera_lock(
+    player_transform: Query<&Transform, With<Player>>,
+    mut camera_transform: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+) {
+    let player_transform = player_transform.single();
+    let mut camera_transform = camera_transform.single_mut();
+
+    camera_transform.translation = player_transform.translation;
 }

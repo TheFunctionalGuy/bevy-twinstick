@@ -6,14 +6,18 @@ use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use rand::random;
 
-// Constants
+// #################
+// ### Constants ###
+// #################
 const PLAYER_COLOR: Color = Color::BLUE;
 const MONSTER_COLOR: Color = Color::RED;
 
 const INITIAL_ENEMY_DINSTANCE: f32 = 750.0;
 const MAXIMUM_ENEMY_COUNT: usize = 10;
 
-// Components
+// ##################
+// ### Components ###
+// ##################
 #[derive(Component)]
 struct Player;
 
@@ -24,13 +28,12 @@ struct Enemy;
 struct Health(i32);
 
 // TODO:
-// 1. Monster spawner (red tiles)
-// 2. Monster movement
-// 3. Monster damage
-// 4. First weapon (rectangles) NOTE: What about projectiles?
-// 5. Weapon switching
-// 6. Shooting + Aiming
-// 7. Rolling
+// 1. Monster movement
+// 2. Monster damage
+// 3. First weapon (rectangles) NOTE: What about projectiles?
+// 4. Weapon switching
+// 5. Shooting + Aiming
+// 6. Rolling
 fn main() {
     App::new()
         // Resources
@@ -57,11 +60,14 @@ fn main() {
         .run();
 }
 
-// Systems
+// ###############
+// ### Systems ###
+// ###############
 fn setup_camera(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
+// Player Systems
 fn spawn_player(mut commands: Commands) {
     commands
         .spawn_bundle(SpriteBundle {
@@ -107,6 +113,7 @@ fn camera_lock(
     camera_transform.translation = player_transform.translation;
 }
 
+// Enemy Systems
 fn spawn_enemy(mut commands: Commands, translation: Vec3) {
     commands
         .spawn_bundle(SpriteBundle {

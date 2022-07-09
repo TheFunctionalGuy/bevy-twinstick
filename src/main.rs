@@ -36,15 +36,14 @@ struct Health(i32);
 struct PlayerInvincibility(f32);
 
 // TODO:
-// 1. Monster movement
-// 2. Player HP UI
-// 3. Monster damage
-// 4. (Monster HP UI)
-// 5. Weapon switching
-// 6. First weapon (rectangles) NOTE: What about projectiles?
-// 7. Shooting + Aiming
-// 8. Rolling
-// 9. Score
+// 1. Player HP UI
+// 2. Monster damage
+// 3. (Monster HP UI)
+// 4. Weapon switching
+// 5. First weapon (rectangles) NOTE: What about projectiles?
+// 6. Shooting + Aiming
+// 7. Rolling
+// 8. Score
 fn main() {
     App::new()
         // Resources
@@ -103,6 +102,7 @@ fn player_movement(
     mut player_transform: Query<&mut Transform, With<Player>>,
 ) {
     let mut player_transform = player_transform.single_mut();
+    //let mut target_point =
 
     if keys.pressed(KeyCode::W) {
         player_transform.translation.y += 2.0;
@@ -154,11 +154,11 @@ fn enemy_movement(
     let player_position = player_transform.single().translation;
 
     for mut enemy_transform in enemy_transforms.iter_mut() {
-        let delta_x = player_position.x - enemy_transform.translation.x;
-        let delta_y = player_position.y - enemy_transform.translation.y;
-
-        let enemy_player_vector =
-            Vec3::new(delta_x, delta_y, 0.0).normalize_or_zero() * ENEMY_SPEED;
+        let enemy_player_vector = scaled_vector_between_points(
+            &enemy_transform.translation,
+            &player_position,
+            ENEMY_SPEED,
+        );
 
         enemy_transform.translation.x += enemy_player_vector.x;
         enemy_transform.translation.y += enemy_player_vector.y;
@@ -189,4 +189,15 @@ fn enemy_spawner(
 
         spawn_enemy(commands, enemy_translation);
     }
+}
+
+// ########################
+// ### Helper Functions ###
+// ########################
+// TODO: Consider reducing the return value to (f32, f32)
+fn scaled_vector_between_points(from: &Vec3, to: &Vec3, scale: f32) -> Vec3 {
+    let delta_x = to.x - from.x;
+    let delta_y = to.y - from.y;
+
+    Vec3::new(delta_x, delta_y, 0.0).normalize_or_zero() * scale
 }

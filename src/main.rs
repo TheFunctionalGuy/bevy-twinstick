@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use bevy::core::FixedTimestep;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy::render::camera::Camera2d;
 use bevy_inspector_egui::WorldInspectorPlugin;
 use rand::random;
 
@@ -138,12 +139,13 @@ fn player_movement(
 
 fn camera_lock(
     player_transform: Query<&Transform, With<Player>>,
-    mut camera_transform: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+    mut camera_transform: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
 ) {
     let player_transform = player_transform.single();
     let mut camera_transform = camera_transform.single_mut();
 
-    camera_transform.translation = player_transform.translation;
+    camera_transform.translation.x = player_transform.translation.x;
+    camera_transform.translation.y = player_transform.translation.y;
 }
 
 // Enemy Systems

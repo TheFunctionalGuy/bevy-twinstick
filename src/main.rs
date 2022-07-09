@@ -86,8 +86,11 @@ fn spawn_player(mut commands: Commands) {
 }
 
 // TODO: Fix diagonal movement being faster than horizontal/vertical movement
-fn player_movement(keys: Res<Input<KeyCode>>, mut q: Query<&mut Transform, With<Player>>) {
-    let mut player_transform = q.single_mut();
+fn player_movement(
+    keys: Res<Input<KeyCode>>,
+    mut player_transform: Query<&mut Transform, With<Player>>,
+) {
+    let mut player_transform = player_transform.single_mut();
 
     if keys.pressed(KeyCode::W) {
         player_transform.translation.y += 2.0;
@@ -135,9 +138,9 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
 fn enemy_spawner(
     commands: Commands,
     player_position: Query<&Transform, With<Player>>,
-    q: Query<Entity, With<Enemy>>,
+    enemies: Query<Entity, With<Enemy>>,
 ) {
-    let enemy_count = q.iter().count();
+    let enemy_count = enemies.iter().count();
 
     if enemy_count < MAXIMUM_ENEMY_COUNT {
         let player_position = player_position.single();

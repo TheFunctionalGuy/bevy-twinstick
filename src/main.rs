@@ -96,26 +96,31 @@ fn spawn_player(mut commands: Commands) {
         .insert(Health(5));
 }
 
-// TODO: Fix diagonal movement being faster than horizontal/vertical movement
 fn player_movement(
     keys: Res<Input<KeyCode>>,
     mut player_transform: Query<&mut Transform, With<Player>>,
 ) {
-    let mut player_transform = player_transform.single_mut();
-    //let mut target_point =
+    let player_translation = &mut player_transform.single_mut().translation;
+    let mut target_point = *player_translation;
 
     if keys.pressed(KeyCode::W) {
-        player_transform.translation.y += 2.0;
+        target_point.y += 1.0;
     }
     if keys.pressed(KeyCode::A) {
-        player_transform.translation.x -= 2.0;
+        target_point.x -= 1.0;
     }
     if keys.pressed(KeyCode::S) {
-        player_transform.translation.y -= 2.0;
+        target_point.y -= 1.0;
     }
     if keys.pressed(KeyCode::D) {
-        player_transform.translation.x += 2.0;
+        target_point.x += 1.0;
     }
+
+    let player_movement_vector =
+        scaled_vector_between_points(player_translation, &target_point, PLAYER_SPEED);
+
+    player_translation.x += player_movement_vector.x;
+    player_translation.y += player_movement_vector.y;
 }
 
 fn camera_lock(
@@ -151,12 +156,12 @@ fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
     mut enemy_transforms: Query<&mut Transform, (With<Enemy>, Without<Player>)>,
 ) {
-    let player_position = player_transform.single().translation;
+    let player_translation = player_transform.single().translation;
 
     for mut enemy_transform in enemy_transforms.iter_mut() {
         let enemy_player_vector = scaled_vector_between_points(
             &enemy_transform.translation,
-            &player_position,
+            &player_translation,
             ENEMY_SPEED,
         );
 

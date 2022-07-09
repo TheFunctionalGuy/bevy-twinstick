@@ -1,3 +1,4 @@
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 
 // Constants
@@ -26,9 +27,10 @@ fn main() {
         .add_startup_system(setup_camera)
         .add_startup_system(spawn_player)
         // Systems
-        .add_system(hello_world_system)
         // Plugins
         .add_plugins(DefaultPlugins)
+        .add_plugin(LogDiagnosticsPlugin::default())
+        .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .run();
 }
 
@@ -52,12 +54,4 @@ fn spawn_player(mut commands: Commands) {
         })
         .insert(Player)
         .insert(Health(5));
-}
-
-// fn spawn_player(commmands: Commands) {
-//     commmands.s
-// }
-
-fn hello_world_system() {
-    println!("Hello, World!");
 }

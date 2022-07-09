@@ -4,6 +4,7 @@ use bevy_inspector_egui::WorldInspectorPlugin;
 
 // Constants
 const PLAYER_COLOR: Color = Color::BLUE;
+const MONSTER_COLOR: Color = Color::RED;
 
 // Components
 #[derive(Component)]
@@ -17,15 +18,18 @@ struct Health(i32);
 
 // TODO:
 // 1. Monster spawner (red tiles)
-// 2. First weapon (rectangles) NOTE: What about projectiles?
-// 3. Weapon switching
-// 4. Shooting + Aiming
-// 5. Rolling
+// 2. Monster movement
+// 3. Monster damage
+// 4. First weapon (rectangles) NOTE: What about projectiles?
+// 5. Weapon switching
+// 6. Shooting + Aiming
+// 7. Rolling
 fn main() {
     App::new()
         // Startup Systems
         .add_startup_system(setup_camera)
         .add_startup_system(spawn_player)
+        .add_startup_system(spawn_enemy)
         // Systems
         .add_system(player_movement)
         // Plugins
@@ -58,6 +62,25 @@ fn spawn_player(mut commands: Commands) {
         .insert(Health(5));
 }
 
+fn spawn_enemy(mut commands: Commands) {
+    commands
+        .spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                color: MONSTER_COLOR,
+                ..default()
+            },
+            transform: Transform {
+                scale: Vec3::new(10.0, 10.0, 10.0),
+                translation: Vec3::new(20.0, 20.0, 0.0),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Enemy)
+        .insert(Health(25));
+}
+
+// TODO: Fix diagonal movement being faster than horizontal/vertical movement
 fn player_movement(keys: Res<Input<KeyCode>>, mut q: Query<&mut Transform, With<Player>>) {
     let mut player_transform = q.single_mut();
 

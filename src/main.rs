@@ -12,7 +12,7 @@ use rand::random;
 const PLAYER_COLOR: Color = Color::BLUE;
 const MONSTER_COLOR: Color = Color::RED;
 
-const INITIAL_ENEMY_DINSTANCE: f32 = 750.0;
+const INITIAL_ENEMY_DISTANCE: f32 = 750.0;
 const MAXIMUM_ENEMY_COUNT: usize = 10;
 
 // ##################
@@ -29,11 +29,13 @@ struct Health(i32);
 
 // TODO:
 // 1. Monster movement
-// 2. Monster damage
-// 3. First weapon (rectangles) NOTE: What about projectiles?
-// 4. Weapon switching
-// 5. Shooting + Aiming
-// 6. Rolling
+// 2. Player HP UI
+// 3. Monster damage
+// 4. (Monster HP UI)
+// 5. First weapon (rectangles) NOTE: What about projectiles?
+// 6. Weapon switching
+// 7. Shooting + Aiming
+// 8. Rolling
 fn main() {
     App::new()
         // Resources
@@ -135,24 +137,36 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
         .insert(Health(25));
 }
 
+fn enemy_movement(
+    player_transform: Query<&Transform, With<Player>>,
+    enemy_transforms: Query<&mut Transform, With<Enemy>>,
+) {
+    let player_position = player_transform.single();
+
+    for mut enemy_transform in enemy_transforms.iter() {
+        // TODO: Move towards player
+    }
+}
+
 fn enemy_spawner(
     commands: Commands,
-    player_position: Query<&Transform, With<Player>>,
+    player_transform: Query<&Transform, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
 ) {
     let enemy_count = enemies.iter().count();
 
+    // TODO: Consider removing this mechanic when it turns out to be less fun than endless spawning
     if enemy_count < MAXIMUM_ENEMY_COUNT {
-        let player_position = player_position.single();
+        let player_transform = player_transform.single();
 
         // Create rotation Quad from rand
         let angle = random::<f32>() * 2.0 * PI;
-        let x = INITIAL_ENEMY_DINSTANCE * angle.cos();
-        let y = INITIAL_ENEMY_DINSTANCE * angle.sin();
+        let x = INITIAL_ENEMY_DISTANCE * angle.cos();
+        let y = INITIAL_ENEMY_DISTANCE * angle.sin();
 
         let enemy_translation = Vec3::new(
-            player_position.translation.x + x,
-            player_position.translation.y + y,
+            player_transform.translation.x + x,
+            player_transform.translation.y + y,
             0.0,
         );
 

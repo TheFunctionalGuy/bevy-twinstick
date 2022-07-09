@@ -1,5 +1,6 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use bevy_inspector_egui::WorldInspectorPlugin;
 
 // Constants
 const PLAYER_COLOR: Color = Color::BLUE;
@@ -15,11 +16,11 @@ struct Enemy;
 struct Health(i32);
 
 // TODO:
-// 1. Player movement
-// 2. Monster spawner (red tiles)
-// 3. First weapon (rectangles) NOTE: What about projectiles?
-// 4. Weapon switching
-// 5. Shooting + Aiming
+// 1. Monster spawner (red tiles)
+// 2. First weapon (rectangles) NOTE: What about projectiles?
+// 3. Weapon switching
+// 4. Shooting + Aiming
+// 5. Rolling
 fn main() {
     App::new()
         // Startup Systems
@@ -31,6 +32,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
+        .add_plugin(WorldInspectorPlugin::new())
         .run();
 }
 

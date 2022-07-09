@@ -14,6 +14,8 @@ const MONSTER_COLOR: Color = Color::RED;
 
 const INITIAL_ENEMY_DISTANCE: f32 = 750.0;
 const MAXIMUM_ENEMY_COUNT: usize = 10;
+const PLAYER_SPEED: f32 = 2.0;
+const ENEMY_SPEED: f32 = 1.5;
 
 // ##################
 // ### Components ###
@@ -27,15 +29,22 @@ struct Enemy;
 #[derive(Component)]
 struct Health(i32);
 
+// #################
+// ### Resources ###
+// #################
+#[derive(Default)]
+struct PlayerInvincibility(f32);
+
 // TODO:
 // 1. Monster movement
 // 2. Player HP UI
 // 3. Monster damage
 // 4. (Monster HP UI)
-// 5. First weapon (rectangles) NOTE: What about projectiles?
-// 6. Weapon switching
+// 5. Weapon switching
+// 6. First weapon (rectangles) NOTE: What about projectiles?
 // 7. Shooting + Aiming
 // 8. Rolling
+// 9. Score
 fn main() {
     App::new()
         // Resources
@@ -49,6 +58,7 @@ fn main() {
         // Systems
         .add_system(player_movement)
         .add_system(camera_lock.after(player_movement))
+        .add_system(enemy_movement.after(player_movement))
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0))
@@ -139,12 +149,19 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
 
 fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
-    enemy_transforms: Query<&mut Transform, With<Enemy>>,
+    mut enemy_transforms: Query<&mut Transform, (With<Enemy>, Without<Player>)>,
 ) {
-    let player_position = player_transform.single();
+    let player_position = player_transform.single().translation;
 
-    for mut enemy_transform in enemy_transforms.iter() {
-        // TODO: Move towards player
+    for mut enemy_transform in enemy_transforms.iter_mut() {
+        let delta_x = player_position.x - enemy_transform.translation.x;
+        let delta_y = player_position.y - enemy_transform.translation.y;
+
+        let enemy_player_vector =
+            Vec3::new(delta_x, delta_y, 0.0).normalize_or_zero() * ENEMY_SPEED;
+
+        enemy_transform.translation.x += enemy_player_vector.x;
+        enemy_transform.translation.y += enemy_player_vector.y;
     }
 }
 

@@ -26,6 +26,11 @@ struct Health(i32);
 // 7. Rolling
 fn main() {
     App::new()
+        // Resources
+        .insert_resource(WindowDescriptor {
+            title: "Cthulhu-Strike 1.6".to_string(),
+            ..default()
+        })
         // Startup Systems
         .add_startup_system(setup_camera)
         .add_startup_system(spawn_player)

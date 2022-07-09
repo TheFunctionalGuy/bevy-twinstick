@@ -9,13 +9,22 @@ use rand::random;
 // #################
 // ### Constants ###
 // #################
+// Colors
 const PLAYER_COLOR: Color = Color::BLUE;
-const MONSTER_COLOR: Color = Color::RED;
+const ENEMY_COLOR: Color = Color::RED;
 
+// Stats (Player)
+const PLAYER_SPEED: f32 = 2.0;
+const PLAYER_HEALTH: i32 = 5;
+// Stats (Enemy)
+const ENEMY_SPEED: f32 = 1.5;
+const ENEMY_HEALTH: i32 = 25;
+
+// TODO: Stats (Weapon)
+
+// Miscellaneous
 const INITIAL_ENEMY_DISTANCE: f32 = 750.0;
 const MAXIMUM_ENEMY_COUNT: usize = 10;
-const PLAYER_SPEED: f32 = 2.0;
-const ENEMY_SPEED: f32 = 1.5;
 
 // ##################
 // ### Components ###
@@ -28,6 +37,9 @@ struct Enemy;
 
 #[derive(Component)]
 struct Health(i32);
+
+#[derive(Component, Deref, DerefMut)]
+struct Speed(f32);
 
 // #################
 // ### Resources ###
@@ -93,15 +105,16 @@ fn spawn_player(mut commands: Commands) {
             ..default()
         })
         .insert(Player)
-        .insert(Health(5));
+        .insert(Health(PLAYER_HEALTH))
+        .insert(Speed(PLAYER_SPEED));
 }
 
 fn player_movement(
     keys: Res<Input<KeyCode>>,
-    mut player_transform: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&mut Transform, &Speed), With<Player>>,
 ) {
-    let player_translation = &mut player_transform.single_mut().translation;
-    let mut target_point = *player_translation;
+    let (mut player_transform, player_speed) = player_query.single_mut();
+    let mut target_point: Vec3 = player_transform.translation;
 
     if keys.pressed(KeyCode::W) {
         target_point.y += 1.0;
@@ -117,10 +130,10 @@ fn player_movement(
     }
 
     let player_movement_vector =
-        scaled_vector_between_points(player_translation, &target_point, PLAYER_SPEED);
+        scaled_vector_between_points(&player_transform.translation, &target_point, **player_speed);
 
-    player_translation.x += player_movement_vector.x;
-    player_translation.y += player_movement_vector.y;
+    player_transform.translation.x += player_movement_vector.x;
+    player_transform.translation.y += player_movement_vector.y;
 }
 
 fn camera_lock(
@@ -138,7 +151,7 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
     commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite {
-                color: MONSTER_COLOR,
+                color: ENEMY_COLOR,
                 ..default()
             },
             transform: Transform {
@@ -149,20 +162,21 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
             ..default()
         })
         .insert(Enemy)
-        .insert(Health(25));
+        .insert(Health(ENEMY_HEALTH))
+        .insert(Speed(ENEMY_SPEED));
 }
 
 fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
-    mut enemy_transforms: Query<&mut Transform, (With<Enemy>, Without<Player>)>,
+    mut enemy_query: Query<(&mut Transform, &Speed), (With<Enemy>, Without<Player>)>,
 ) {
     let player_translation = player_transform.single().translation;
 
-    for mut enemy_transform in enemy_transforms.iter_mut() {
+    for (mut enemy_transform, enemy_speed) in enemy_query.iter_mut() {
         let enemy_player_vector = scaled_vector_between_points(
             &enemy_transform.translation,
             &player_translation,
-            ENEMY_SPEED,
+            **enemy_speed,
         );
 
         enemy_transform.translation.x += enemy_player_vector.x;

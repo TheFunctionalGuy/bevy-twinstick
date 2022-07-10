@@ -12,6 +12,7 @@ use rand::random;
 // Colors
 const PLAYER_COLOR: Color = Color::BLUE;
 const ENEMY_COLOR: Color = Color::RED;
+const TEXT_COLOR: Color = Color::WHITE;
 
 // Stats (Player)
 const PLAYER_SPEED: f32 = 2.0;
@@ -37,6 +38,9 @@ struct Enemy;
 
 #[derive(Component, Deref, DerefMut, Inspectable)]
 struct Health(i32);
+
+#[derive(Component)]
+struct HealthText;
 
 #[derive(Component, Deref, DerefMut, Inspectable)]
 struct Speed(f32);
@@ -68,11 +72,13 @@ fn main() {
         })
         // Startup Systems
         .add_startup_system(setup_camera)
+        .add_startup_system(setup_ui)
         .add_startup_system(spawn_player)
         // Systems
         .add_system(player_movement)
         .add_system(camera_lock.after(player_movement))
         .add_system(enemy_movement.after(player_movement))
+        .add_system(update_health_ui.after(enemy_movement))
         .add_system_set(
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0))
@@ -96,6 +102,31 @@ fn setup_camera(mut commands: Commands) {
         .spawn_bundle(OrthographicCameraBundle::new_2d())
         .insert(MainCamera)
         .insert(Name::new("MainCamera"));
+}
+
+fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn_bundle(UiCameraBundle::default());
+
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                margin: Rect::all(Val::Px(25.0)),
+                ..default()
+            },
+            text: Text::with_section(
+                "Health: %",
+                TextStyle {
+                    font,
+                    font_size: 40.0,
+                    color: TEXT_COLOR,
+                },
+                Default::default(),
+            ),
+            ..default()
+        })
+        .insert(HealthText);
 }
 
 // Player Systems
@@ -143,6 +174,16 @@ fn player_movement(
 
     player_transform.translation.x += player_movement_vector.x;
     player_transform.translation.y += player_movement_vector.y;
+}
+
+fn update_health_ui(
+    player_health: Query<&Health, With<Player>>,
+    mut health_text: Query<&mut Text, With<HealthText>>,
+) {
+    let player_health = player_health.single();
+    let mut health_text = health_text.single_mut();
+
+    health_text.sections[0].value = format!("Health: {}", **player_health);
 }
 
 fn camera_lock(

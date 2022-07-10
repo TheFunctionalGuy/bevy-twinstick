@@ -55,7 +55,7 @@ struct MainCamera;
 struct PlayerInvincibility(f32);
 
 // TODO:
-// 1. Player HP UI
+// 1. Refactor code structure
 // 2. Monster damage
 // 3. (Monster HP UI)
 // 4. Weapon switching

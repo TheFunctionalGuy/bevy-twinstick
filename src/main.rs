@@ -3,7 +3,6 @@ use std::f32::consts::PI;
 use bevy::core::FixedTimestep;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-use bevy::render::camera::Camera2d;
 use bevy_inspector_egui::{Inspectable, RegisterInspectable, WorldInspectorPlugin};
 use rand::random;
 
@@ -41,6 +40,9 @@ struct Health(i32);
 
 #[derive(Component, Deref, DerefMut, Inspectable)]
 struct Speed(f32);
+
+#[derive(Component)]
+struct MainCamera;
 
 // #################
 // ### Resources ###
@@ -90,7 +92,10 @@ fn main() {
 // ### Systems ###
 // ###############
 fn setup_camera(mut commands: Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands
+        .spawn_bundle(OrthographicCameraBundle::new_2d())
+        .insert(MainCamera)
+        .insert(Name::new("MainCamera"));
 }
 
 // Player Systems
@@ -142,7 +147,7 @@ fn player_movement(
 
 fn camera_lock(
     player_transform: Query<&Transform, With<Player>>,
-    mut camera_transform: Query<&mut Transform, (With<Camera2d>, Without<Player>)>,
+    mut camera_transform: Query<&mut Transform, (With<MainCamera>, Without<Player>)>,
 ) {
     let player_transform = player_transform.single();
     let mut camera_transform = camera_transform.single_mut();

@@ -68,6 +68,8 @@ fn main() {
         // Resources
         .insert_resource(WindowDescriptor {
             title: "Cthulhu-Strike 1.6".to_string(),
+            width: 1280.0,
+            height: 720.0,
             ..default()
         })
         // Startup Systems

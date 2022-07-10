@@ -4,7 +4,7 @@ use bevy::core::FixedTimestep;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use bevy::render::camera::Camera2d;
-use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_inspector_egui::{Inspectable, RegisterInspectable, WorldInspectorPlugin};
 use rand::random;
 
 // #################
@@ -36,10 +36,10 @@ struct Player;
 #[derive(Component)]
 struct Enemy;
 
-#[derive(Component)]
+#[derive(Component, Deref, DerefMut, Inspectable)]
 struct Health(i32);
 
-#[derive(Component, Deref, DerefMut)]
+#[derive(Component, Deref, DerefMut, Inspectable)]
 struct Speed(f32);
 
 // #################
@@ -81,6 +81,8 @@ fn main() {
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())
         .add_plugin(WorldInspectorPlugin::new())
+        .register_inspectable::<Speed>()
+        .register_inspectable::<Health>()
         .run();
 }
 
@@ -106,6 +108,7 @@ fn spawn_player(mut commands: Commands) {
             ..default()
         })
         .insert(Player)
+        .insert(Name::new("Player"))
         .insert(Health(PLAYER_HEALTH))
         .insert(Speed(PLAYER_SPEED));
 }
@@ -164,10 +167,12 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
             ..default()
         })
         .insert(Enemy)
+        .insert(Name::new("Enemy"))
         .insert(Health(ENEMY_HEALTH))
         .insert(Speed(ENEMY_SPEED));
 }
 
+// TODO: Add logic so that enemies can't be inside another enemy or the player
 fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
     mut enemy_query: Query<(&mut Transform, &Speed), (With<Enemy>, Without<Player>)>,

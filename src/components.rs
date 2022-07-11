@@ -10,7 +10,7 @@ impl Plugin for InspectionPlugin {
             .register_inspectable::<Damage>()
             .register_inspectable::<CurrentAmmo>()
             .register_inspectable::<MaximumAmmo>()
-            .register_inspectable::<ReloadTime>();
+            .register_inspectable::<Reloading>();
     }
 }
 
@@ -40,8 +40,14 @@ pub struct CurrentAmmo(pub u32);
 #[derive(Component, Deref, DerefMut, Inspectable)]
 pub struct MaximumAmmo(pub u32);
 
+#[derive(Component, Deref, DerefMut)]
+pub struct FireDelayTimer(pub Timer);
+
+#[derive(Component, Deref, DerefMut)]
+pub struct ReloadTimer(pub Timer);
+
 #[derive(Component, Deref, DerefMut, Inspectable)]
-pub struct ReloadTime(pub f32);
+pub struct Reloading(pub bool);
 
 // Properties
 #[derive(Component)]

@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Health, HealthText, Player},
+    components::{Health, HealthText, Player, Weapon, WeaponText},
     enemies::enemy_movement,
+    weapons::SelectedWeapon,
 };
 
 // Constants
@@ -14,7 +15,8 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_ui)
-            .add_system(update_health.after(enemy_movement));
+            .add_system(update_health.after(enemy_movement))
+            .add_system(update_selected_weapon);
     }
 }
 
@@ -25,25 +27,72 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands
-        .spawn_bundle(TextBundle {
+        .spawn_bundle(NodeBundle {
             style: Style {
-                margin: Rect::all(Val::Px(25.0)),
+                margin: Rect::all(Val::Auto),
+                flex_direction: FlexDirection::ColumnReverse,
+                align_items: AlignItems::FlexStart,
+                position_type: PositionType::Absolute,
+                position: Rect {
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(10.0),
+                    ..default()
+                },
                 ..default()
             },
-            text: Text::with_section(
-                "Health: %",
-                TextStyle {
-                    font,
-                    font_size: 40.0,
-                    color: TEXT_COLOR,
-                },
-                Default::default(),
-            ),
+            color: Color::rgba(0.0, 0.0, 0.0, 0.0).into(),
             ..default()
         })
-        .insert(HealthText);
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        margin: Rect {
+                            left: Val::Px(5.0),
+                            right: Val::Px(5.0),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    text: Text::with_section(
+                        "Health: %",
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 30.0,
+                            color: TEXT_COLOR,
+                        },
+                        Default::default(),
+                    ),
+                    ..default()
+                })
+                .insert(HealthText);
+
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        margin: Rect {
+                            left: Val::Px(5.0),
+                            right: Val::Px(5.0),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    text: Text::with_section(
+                        "Weapon: %",
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 30.0,
+                            color: TEXT_COLOR,
+                        },
+                        Default::default(),
+                    ),
+                    ..default()
+                })
+                .insert(WeaponText);
+        });
 }
 
+// TODO: Refactor
 fn update_health(
     player_health: Query<&Health, With<Player>>,
     mut health_text: Query<&mut Text, With<HealthText>>,
@@ -52,4 +101,18 @@ fn update_health(
     let mut health_text = health_text.single_mut();
 
     health_text.sections[0].value = format!("Health: {}", **player_health);
+}
+
+fn update_selected_weapon(
+    selected_weapon: Res<SelectedWeapon>,
+    weapon_names: Query<&Name, With<Weapon>>,
+    mut weapon_text: Query<&mut Text, With<WeaponText>>,
+) {
+    let mut weapon_text = weapon_text.single_mut();
+
+    if let Some(weapon_ent) = **selected_weapon {
+        if let Ok(weapon_name) = weapon_names.get(weapon_ent) {
+            weapon_text.sections[0].value = format!("Weapon: {}", weapon_name);
+        }
+    }
 }

@@ -54,4 +54,7 @@ pub struct Reloading(pub bool);
 pub struct HealthText;
 
 #[derive(Component)]
+pub struct WeaponText;
+
+#[derive(Component)]
 pub struct MainCamera;

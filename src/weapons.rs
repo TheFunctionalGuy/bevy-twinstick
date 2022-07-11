@@ -18,7 +18,7 @@ const WEAPONS: [(&str, i32, u32, f32, f32); 5] = [
 
 // Resource
 #[derive(Default, Deref, DerefMut)]
-struct SelectedWeapon(Option<Entity>);
+pub struct SelectedWeapon(Option<Entity>);
 
 #[derive(Default, Deref, DerefMut)]
 struct Weapons(Vec<Entity>);

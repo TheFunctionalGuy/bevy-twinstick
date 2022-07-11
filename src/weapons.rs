@@ -3,6 +3,15 @@ use bevy::prelude::*;
 use crate::components::{CurrentAmmo, Damage, MaximumAmmo, ReloadTime, Weapon};
 
 // Constants
+const WEAPONS: [(&str, i32, u32, f32); 5] = [
+    ("Pistols", 10_i32, 30_u32, 2.0_f32),
+    // Reload time is meant per pellet
+    ("Shotgun", 30_i32, 7_u32, 0.75_f32),
+    ("AssaultRifle", 15_i32, 30_u32, 1.5_f32),
+    ("RocketLauncher", 50_i32, 1_u32, 2.5_f32),
+    // TODO: Laser has special ammo system
+    ("Laser", 10_i32, 30_u32, 1.5_f32),
+];
 
 // Bundle
 #[derive(Bundle)]
@@ -20,21 +29,23 @@ pub struct WeaponPlugin;
 
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawn_weapon)
+        app.add_startup_system(spawn_weapons)
             .add_system(handle_weapon_input);
     }
 }
 
 // Systems
-fn spawn_weapon(mut commands: Commands) {
-    commands.spawn_bundle(WeaponBundle {
-        name: Name::new("Pistols"),
-        damage: Damage(10),
-        maximum_ammo: MaximumAmmo(30),
-        current_ammo: CurrentAmmo(30),
-        reload_time: ReloadTime(1.5),
-        _weapon: Weapon,
-    });
+fn spawn_weapons(mut commands: Commands) {
+    for (name, damage, ammo, reload_time) in WEAPONS {
+        commands.spawn_bundle(WeaponBundle {
+            name: Name::new(name),
+            damage: Damage(damage),
+            maximum_ammo: MaximumAmmo(ammo),
+            current_ammo: CurrentAmmo(ammo),
+            reload_time: ReloadTime(reload_time),
+            _weapon: Weapon,
+        });
+    }
 }
 
 fn handle_weapon_input(

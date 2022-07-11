@@ -42,7 +42,10 @@ pub struct WeaponPlugin;
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_weapons)
+            // TODO: Consider system order to prevent bugs
             .add_system(handle_weapon_input)
+            .add_system(reload_weapon)
+            .add_system(select_weapon)
             .insert_resource(SelectedWeapon::default())
             .insert_resource(Weapons::default());
     }
@@ -92,5 +95,41 @@ fn handle_weapon_input(
                 }
             }
         }
+    }
+}
+
+fn reload_weapon(
+    keys: Res<Input<KeyCode>>,
+    selected_weapon: Res<SelectedWeapon>,
+    mut weapon_ammo: Query<(&MaximumAmmo, &mut CurrentAmmo)>,
+) {
+    if let Some(weapon_ent) = **selected_weapon {
+        if let Ok((maximum_ammo, mut current_ammo)) = weapon_ammo.get_mut(weapon_ent) {
+            if keys.pressed(KeyCode::R) {
+                **current_ammo = **maximum_ammo;
+            }
+        }
+    }
+}
+
+fn select_weapon(
+    keys: Res<Input<KeyCode>>,
+    weapons: Res<Weapons>,
+    mut selected_weapon: ResMut<SelectedWeapon>,
+) {
+    if keys.pressed(KeyCode::Key1) {
+        **selected_weapon = Some(weapons[0]);
+    }
+    if keys.pressed(KeyCode::Key2) {
+        **selected_weapon = Some(weapons[1]);
+    }
+    if keys.pressed(KeyCode::Key3) {
+        **selected_weapon = Some(weapons[2]);
+    }
+    if keys.pressed(KeyCode::Key4) {
+        **selected_weapon = Some(weapons[3]);
+    }
+    if keys.pressed(KeyCode::Key5) {
+        **selected_weapon = Some(weapons[4]);
     }
 }

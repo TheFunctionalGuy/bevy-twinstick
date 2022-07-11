@@ -7,6 +7,7 @@ impl Plugin for InspectionPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.register_inspectable::<Health>()
             .register_inspectable::<Speed>()
+            .register_inspectable::<Damage>()
             .register_inspectable::<CurrentAmmo>()
             .register_inspectable::<MaximumAmmo>()
             .register_inspectable::<ReloadTime>();
@@ -29,6 +30,9 @@ pub struct Health(pub i32);
 
 #[derive(Component, Deref, DerefMut, Inspectable)]
 pub struct Speed(pub f32);
+
+#[derive(Component, Deref, DerefMut, Inspectable)]
+pub struct Damage(pub i32);
 
 #[derive(Component, Deref, DerefMut, Inspectable)]
 pub struct CurrentAmmo(pub u32);

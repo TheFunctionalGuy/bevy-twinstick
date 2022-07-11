@@ -14,7 +14,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup_ui)
-            .add_system(update_health_ui.after(enemy_movement));
+            .add_system(update_health.after(enemy_movement));
     }
 }
 
@@ -44,7 +44,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(HealthText);
 }
 
-fn update_health_ui(
+fn update_health(
     player_health: Query<&Health, With<Player>>,
     mut health_text: Query<&mut Text, With<HealthText>>,
 ) {

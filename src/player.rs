@@ -41,6 +41,7 @@ fn spawn_player(mut commands: Commands) {
         .insert(Speed(PLAYER_SPEED));
 }
 
+// TODO: Consider moving all input handling to separate plugin
 pub fn player_movement(
     keys: Res<Input<KeyCode>>,
     mut player_query: Query<(&mut Transform, &Speed), With<Player>>,

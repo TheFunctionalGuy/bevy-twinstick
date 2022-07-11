@@ -3,6 +3,7 @@ mod enemies;
 mod player;
 mod ui;
 mod util;
+mod weapons;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -12,6 +13,7 @@ use components::{InspectionPlugin, MainCamera};
 use enemies::EnemyPlugin;
 use player::PlayerPlugin;
 use ui::UiPlugin;
+use weapons::WeaponPlugin;
 
 // #################
 // ### Constants ###
@@ -27,11 +29,12 @@ struct PlayerInvincibility(f32);
 // TODO:
 // 1. Monster damage
 // 2. (Monster HP UI)
-// 3. Weapon switching
-// 4. First weapon (rectangles) NOTE: What about projectiles?
-// 5. Shooting + Aiming
-// 6. Rolling
-// 7. Score
+// 3. First weapon (rectangles) NOTE: What about projectiles?
+// 4. Aiming + Shooting + Weapon Damage
+// 5. Weapon switching
+// 6. Invincibility after being hit
+// 7. Rolling
+// 8. Score
 fn main() {
     App::new()
         // Resources
@@ -46,6 +49,7 @@ fn main() {
         // Plugins
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
+        .add_plugin(WeaponPlugin)
         .add_plugin(EnemyPlugin)
         .add_plugin(UiPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())

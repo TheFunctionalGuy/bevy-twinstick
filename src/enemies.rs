@@ -79,6 +79,7 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
 }
 
 // TODO: Add logic so that enemies can't be inside another enemy or the player
+// TODO: Make independent from FPS
 pub fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
     mut enemy_query: Query<(&mut Transform, &Speed), (With<Enemy>, Without<Player>)>,

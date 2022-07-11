@@ -16,11 +16,6 @@ use ui::UiPlugin;
 use weapons::WeaponPlugin;
 
 // #################
-// ### Constants ###
-// #################
-// TODO: Stats (Weapon)
-
-// #################
 // ### Resources ###
 // #################
 #[derive(Default)]

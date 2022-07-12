@@ -1,10 +1,10 @@
 use std::f32::consts::PI;
 
-use bevy::{core::FixedTimestep, prelude::*};
+use bevy::{core::FixedTimestep, prelude::*, sprite::collide_aabb::collide};
 use rand::random;
 
 use crate::{
-    components::{Enemy, Health, Player, Speed},
+    components::{Enemy, Health, InvincibilityTimer, Invincible, Player, Speed},
     player::player_movement,
     util::scaled_vector_between_points,
 };
@@ -27,7 +27,8 @@ impl Plugin for EnemyPlugin {
                 .with_run_criteria(FixedTimestep::step(1.0))
                 .with_system(enemy_spawner),
         )
-        .add_system(enemy_movement.after(player_movement));
+        .add_system(enemy_movement.after(player_movement))
+        .add_system(enemy_damage.after(enemy_movement));
     }
 }
 
@@ -95,5 +96,47 @@ pub fn enemy_movement(
 
         enemy_transform.translation.x += enemy_player_vector.x;
         enemy_transform.translation.y += enemy_player_vector.y;
+    }
+}
+
+fn enemy_damage(
+    time: Res<Time>,
+    mut player_query: Query<
+        (
+            &Transform,
+            &mut Health,
+            &mut Invincible,
+            &mut InvincibilityTimer,
+        ),
+        With<Player>,
+    >,
+    enemy_transforms: Query<&Transform, (With<Enemy>, Without<Player>)>,
+) {
+    let (player_transform, mut player_health, mut invincible, mut invincibility_timer) =
+        player_query.single_mut();
+
+    if !**invincible {
+        for enemy_transform in enemy_transforms.iter() {
+            if collide(
+                player_transform.translation,
+                Vec2::new(30.0, 30.0),
+                enemy_transform.translation,
+                Vec2::new(30.0, 30.0),
+            )
+            .is_some()
+            {
+                **player_health -= 1;
+                **invincible = true;
+                invincibility_timer.reset();
+
+                break;
+            }
+        }
+    } else {
+        invincibility_timer.tick(time.delta());
+
+        if invincibility_timer.just_finished() {
+            **invincible = false;
+        }
     }
 }

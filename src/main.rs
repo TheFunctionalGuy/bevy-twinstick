@@ -15,21 +15,14 @@ use player::PlayerPlugin;
 use ui::UiPlugin;
 use weapons::WeaponPlugin;
 
-// #################
-// ### Resources ###
-// #################
-#[derive(Default)]
-struct PlayerInvincibility(f32);
-
 // TODO:
 // 1. Monster damage
 // 2. (Monster HP UI)
 // 3. First weapon (rectangles) NOTE: What about projectiles?
 // 4. Aiming + Shooting + Weapon Damage
-// 5. Weapon switching
-// 6. Invincibility after being hit
-// 7. Rolling
-// 8. Score
+// 5. Invincibility after being hit
+// 6. Rolling
+// 7. Score
 fn main() {
     App::new()
         // Resources

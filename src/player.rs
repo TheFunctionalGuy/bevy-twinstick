@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{Health, MainCamera, Player, Speed},
+    components::{Health, InvincibilityTimer, Invincible, MainCamera, Player, Speed},
     util::scaled_vector_between_points,
 };
 
@@ -9,6 +9,7 @@ use crate::{
 const PLAYER_COLOR: Color = Color::BLUE;
 const PLAYER_SPEED: f32 = 120.0;
 const PLAYER_HEALTH: i32 = 5;
+const PLAYER_INVINCIBILITY_TIME: f32 = 2.0;
 
 // Plugin
 pub struct PlayerPlugin;
@@ -38,6 +39,11 @@ fn spawn_player(mut commands: Commands) {
         .insert(Player)
         .insert(Name::new("Player"))
         .insert(Health(PLAYER_HEALTH))
+        .insert(Invincible(false))
+        .insert(InvincibilityTimer(Timer::from_seconds(
+            PLAYER_INVINCIBILITY_TIME,
+            false,
+        )))
         .insert(Speed(PLAYER_SPEED));
 }
 

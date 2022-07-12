@@ -11,7 +11,7 @@ use crate::{
 
 // Constants
 const ENEMY_COLOR: Color = Color::RED;
-const ENEMY_SPEED: f32 = 1.5;
+const ENEMY_SPEED: f32 = 90.0;
 const ENEMY_HEALTH: i32 = 25;
 
 const INITIAL_ENEMY_DISTANCE: f32 = 750.0;
@@ -79,8 +79,8 @@ fn spawn_enemy(mut commands: Commands, translation: Vec3) {
 }
 
 // TODO: Add logic so that enemies can't be inside another enemy or the player
-// TODO: Make independent from FPS
 pub fn enemy_movement(
+    time: Res<Time>,
     player_transform: Query<&Transform, With<Player>>,
     mut enemy_query: Query<(&mut Transform, &Speed), (With<Enemy>, Without<Player>)>,
 ) {
@@ -90,7 +90,7 @@ pub fn enemy_movement(
         let enemy_player_vector = scaled_vector_between_points(
             &enemy_transform.translation,
             &player_translation,
-            **enemy_speed,
+            **enemy_speed * time.delta_seconds(),
         );
 
         enemy_transform.translation.x += enemy_player_vector.x;

@@ -43,7 +43,7 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_weapons)
             // TODO: Consider system order to prevent bugs
-            .add_system(handle_weapon_input)
+            .add_system(shoot_weapon)
             .add_system(reload_weapon)
             .add_system(select_weapon)
             .insert_resource(SelectedWeapon::default())
@@ -80,18 +80,24 @@ fn spawn_weapons(
 
 // TODO: Add fire mode
 // TODO: Add delay between shoots
-fn handle_weapon_input(
+fn shoot_weapon(
     mouse_buttons: Res<Input<MouseButton>>,
     selected_weapon: Res<SelectedWeapon>,
-    mut weapon_ammo: Query<&mut CurrentAmmo>,
+    mut weapon_ammo: Query<(&mut CurrentAmmo, &mut Reloading, &mut ReloadTimer)>,
 ) {
     if mouse_buttons.just_pressed(MouseButton::Left) {
         if let Some(weapon_ent) = **selected_weapon {
-            if let Ok(mut current_ammo) = weapon_ammo.get_mut(weapon_ent) {
-                if **current_ammo > 0 {
+            if let Ok((mut current_ammo, mut reloading, mut reload_timer)) =
+                weapon_ammo.get_mut(weapon_ent)
+            {
+                if !**reloading {
                     **current_ammo -= 1;
-                } else {
-                    println!("Weapon empty!");
+
+                    // Auto-reload
+                    if **current_ammo == 0 {
+                        **reloading = true;
+                        reload_timer.reset();
+                    }
                 }
             }
         }
@@ -100,13 +106,29 @@ fn handle_weapon_input(
 
 fn reload_weapon(
     keys: Res<Input<KeyCode>>,
+    time: Res<Time>,
     selected_weapon: Res<SelectedWeapon>,
-    mut weapon_ammo: Query<(&MaximumAmmo, &mut CurrentAmmo)>,
+    mut weapon_ammo: Query<(
+        &MaximumAmmo,
+        &mut CurrentAmmo,
+        &mut Reloading,
+        &mut ReloadTimer,
+    )>,
 ) {
     if let Some(weapon_ent) = **selected_weapon {
-        if let Ok((maximum_ammo, mut current_ammo)) = weapon_ammo.get_mut(weapon_ent) {
-            if keys.pressed(KeyCode::R) {
-                **current_ammo = **maximum_ammo;
+        if let Ok((maximum_ammo, mut current_ammo, mut reloading, mut reload_timer)) =
+            weapon_ammo.get_mut(weapon_ent)
+        {
+            if **reloading {
+                reload_timer.tick(time.delta());
+
+                if reload_timer.just_finished() {
+                    **current_ammo = **maximum_ammo;
+                    **reloading = false;
+                }
+            } else if keys.pressed(KeyCode::R) {
+                **reloading = true;
+                reload_timer.reset();
             }
         }
     }

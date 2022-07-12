@@ -42,10 +42,9 @@ pub struct WeaponPlugin;
 impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_weapons)
-            // TODO: Consider system order to prevent bugs
-            .add_system(shoot_weapon)
-            .add_system(reload_weapon)
             .add_system(select_weapon)
+            .add_system(shoot_weapon.after(select_weapon))
+            .add_system(reload_weapon.after(shoot_weapon))
             .insert_resource(SelectedWeapon::default())
             .insert_resource(Weapons::default());
     }
@@ -79,25 +78,34 @@ fn spawn_weapons(
 }
 
 // TODO: Add fire mode
-// TODO: Add delay between shoots
 fn shoot_weapon(
     mouse_buttons: Res<Input<MouseButton>>,
+    time: Res<Time>,
     selected_weapon: Res<SelectedWeapon>,
-    mut weapon_ammo: Query<(&mut CurrentAmmo, &mut Reloading, &mut ReloadTimer)>,
+    mut weapon_ammo: Query<(
+        &mut CurrentAmmo,
+        &mut FireDelayTimer,
+        &mut Reloading,
+        &mut ReloadTimer,
+    )>,
 ) {
-    if mouse_buttons.just_pressed(MouseButton::Left) {
-        if let Some(weapon_ent) = **selected_weapon {
-            if let Ok((mut current_ammo, mut reloading, mut reload_timer)) =
-                weapon_ammo.get_mut(weapon_ent)
-            {
-                if !**reloading {
-                    **current_ammo -= 1;
+    if let Some(weapon_ent) = **selected_weapon {
+        if let Ok((mut current_ammo, mut fire_delay_timer, mut reloading, mut reload_timer)) =
+            weapon_ammo.get_mut(weapon_ent)
+        {
+            fire_delay_timer.tick(time.delta());
 
-                    // Auto-reload
-                    if **current_ammo == 0 {
-                        **reloading = true;
-                        reload_timer.reset();
-                    }
+            if mouse_buttons.just_pressed(MouseButton::Left)
+                && fire_delay_timer.finished()
+                && !**reloading
+            {
+                **current_ammo -= 1;
+                fire_delay_timer.reset();
+
+                // Auto-reload
+                if **current_ammo == 0 {
+                    **reloading = true;
+                    reload_timer.reset();
                 }
             }
         }

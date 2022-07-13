@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     components::{Health, InvincibilityTimer, Invincible, MainCamera, Player, Speed},
-    util::scaled_vector_between_points,
+    util::VectorMath,
 };
 
 // Constants
@@ -54,7 +54,7 @@ pub fn player_movement(
     mut player_query: Query<(&mut Transform, &Speed), With<Player>>,
 ) {
     let (mut player_transform, player_speed) = player_query.single_mut();
-    let mut target_point: Vec3 = player_transform.translation;
+    let mut target_point: Vec2 = player_transform.translation.truncate();
 
     if keys.pressed(KeyCode::W) {
         target_point.y += 1.0;
@@ -69,11 +69,10 @@ pub fn player_movement(
         target_point.x += 1.0;
     }
 
-    let player_movement_vector = scaled_vector_between_points(
-        &player_transform.translation,
-        &target_point,
-        **player_speed * time.delta_seconds(),
-    );
+    let player_movement_vector = player_transform
+        .translation
+        .truncate()
+        .scaled_vector_to(&target_point, **player_speed * time.delta_seconds());
 
     player_transform.translation.x += player_movement_vector.x;
     player_transform.translation.y += player_movement_vector.y;

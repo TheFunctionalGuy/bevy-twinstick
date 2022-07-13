@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 
-// TODO: Consider reducing the return value to (f32, f32)
-pub fn scaled_vector_between_points(from: &Vec3, to: &Vec3, scale: f32) -> Vec3 {
-    let delta_x = to.x - from.x;
-    let delta_y = to.y - from.y;
-
-    Vec3::new(delta_x, delta_y, 0.0).normalize_or_zero() * scale
-}
-
-trait VectorMath {
+pub(crate) trait VectorMath {
+    fn scaled_vector_to(&self, to: &Self, scale: f32) -> Self;
     fn is_in_triangle(&self, a: &Self, b: &Self, c: &Self) -> bool;
 }
 
 impl VectorMath for Vec2 {
+    fn scaled_vector_to(&self, to: &Self, scale: f32) -> Self {
+        let delta_x = to.x - self.x;
+        let delta_y = to.y - self.y;
+
+        Vec2::new(delta_x, delta_y).normalize_or_zero() * scale
+    }
+
     fn is_in_triangle(&self, a: &Self, b: &Self, c: &Self) -> bool {
         let w_1: f32 = (a.x * (c.y - a.y) + (self.y - a.y) * (c.x - a.x) - self.x * (c.y - a.y))
             / ((b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y));

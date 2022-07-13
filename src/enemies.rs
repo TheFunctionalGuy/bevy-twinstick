@@ -6,7 +6,7 @@ use rand::random;
 use crate::{
     components::{Enemy, Health, InvincibilityTimer, Invincible, Player, Speed},
     player::player_movement,
-    util::scaled_vector_between_points,
+    util::VectorMath,
 };
 
 // Constants
@@ -85,14 +85,13 @@ pub fn enemy_movement(
     player_transform: Query<&Transform, With<Player>>,
     mut enemy_query: Query<(&mut Transform, &Speed), (With<Enemy>, Without<Player>)>,
 ) {
-    let player_translation = player_transform.single().translation;
+    let player_position = player_transform.single().translation.truncate();
 
     for (mut enemy_transform, enemy_speed) in enemy_query.iter_mut() {
-        let enemy_player_vector = scaled_vector_between_points(
-            &enemy_transform.translation,
-            &player_translation,
-            **enemy_speed * time.delta_seconds(),
-        );
+        let enemy_player_vector = enemy_transform
+            .translation
+            .truncate()
+            .scaled_vector_to(&player_position, **enemy_speed * time.delta_seconds());
 
         enemy_transform.translation.x += enemy_player_vector.x;
         enemy_transform.translation.y += enemy_player_vector.y;

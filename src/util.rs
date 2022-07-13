@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub(crate) trait VectorMath {
     fn scaled_vector_to(&self, to: &Self, scale: f32) -> Self;
     fn is_in_triangle(&self, a: &Self, b: &Self, c: &Self) -> bool;
+    fn rotated_by(&self, angle: f32) -> Self;
 }
 
 impl VectorMath for Vec2 {
@@ -19,6 +20,13 @@ impl VectorMath for Vec2 {
         let w_2: f32 = (self.y - a.y - w_1 * (b.y - a.y)) / (c.y - a.y);
 
         w_1 >= 0.0 && w_2 >= 0.0 && (w_1 + w_2) <= 1.0
+    }
+
+    fn rotated_by(&self, angle: f32) -> Self {
+        let rotated_x = self.x * angle.cos() - self.y * angle.sin();
+        let rotated_y = self.x * angle.sin() + self.y * angle.cos();
+
+        Vec2::new(rotated_x, rotated_y)
     }
 }
 

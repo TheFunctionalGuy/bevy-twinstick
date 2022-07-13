@@ -16,13 +16,12 @@ use ui::UiPlugin;
 use weapons::WeaponPlugin;
 
 // TODO:
-// 1. Monster damage
-// 2. (Monster HP UI)
-// 3. First weapon (rectangles) NOTE: What about projectiles?
-// 4. Aiming + Shooting + Weapon Damage
-// 5. Invincibility after being hit
-// 6. Rolling
-// 7. Score
+// 1. Aiming + Weapon Damage
+// 2. Reload UI
+// 3. Weapon Models (rectangles) NOTE: What about projectiles?
+// 4. Score
+// 5. Rolling
+// 6. (Monster HP UI)
 fn main() {
     App::new()
         // Resources

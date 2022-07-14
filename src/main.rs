@@ -1,5 +1,6 @@
 mod components;
 mod enemies;
+mod mouse;
 mod player;
 mod ui;
 mod util;
@@ -11,17 +12,19 @@ use bevy_inspector_egui::WorldInspectorPlugin;
 
 use components::{InspectionPlugin, MainCamera};
 use enemies::EnemyPlugin;
+use mouse::MousePlugin;
 use player::PlayerPlugin;
 use ui::UiPlugin;
 use weapons::WeaponPlugin;
 
 // TODO:
-// 1. Aiming + Weapon Damage
-// 2. Reload UI
-// 3. Weapon Models (rectangles) NOTE: What about projectiles?
-// 4. Score
-// 5. Rolling
-// 6. (Monster HP UI)
+// 1. Aiming + weapon damage
+// 2. System refactoring
+// 3. Reload UI
+// 4. Weapon models (rectangles) NOTE: What about projectiles?
+// 5. Score
+// 6. Rolling
+// 7. (Monster HP UI)
 fn main() {
     App::new()
         // Resources
@@ -38,6 +41,7 @@ fn main() {
         .add_plugin(PlayerPlugin)
         .add_plugin(WeaponPlugin)
         .add_plugin(EnemyPlugin)
+        .add_plugin(MousePlugin)
         .add_plugin(UiPlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin::default())

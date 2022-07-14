@@ -1,11 +1,18 @@
+use std::f32::consts::FRAC_PI_6;
+
 use bevy::prelude::*;
 
-use crate::components::{
-    CurrentAmmo, Damage, FireDelayTimer, MaximumAmmo, ReloadTimer, Reloading, Weapon,
+use crate::{
+    components::{
+        CurrentAmmo, Damage, Enemy, FireDelayTimer, Health, MaximumAmmo, Player, ReloadTimer,
+        Reloading, Weapon,
+    },
+    mouse::MousePosition,
+    util::VectorMath,
 };
 
 // Constants
-// (name, damage, ammo, delay, reload)
+// (name, damage, RANGE, ammo, delay, reload)
 const WEAPONS: [(&str, i32, u32, f32, f32); 5] = [
     ("Pistols", 10_i32, 30_u32, 0.3_f32, 2.0_f32),
     // Reload time is meant per pellet
@@ -16,7 +23,7 @@ const WEAPONS: [(&str, i32, u32, f32, f32); 5] = [
     ("Laser", 10_i32, 30_u32, 0.1_f32, 1.5_f32),
 ];
 
-// Resource
+// Resources
 #[derive(Default, Deref, DerefMut)]
 pub struct SelectedWeapon(Option<Entity>);
 
@@ -43,10 +50,11 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(spawn_weapons)
             .add_system(select_weapon)
-            .add_system(shoot_weapon.after(select_weapon))
+            .add_system(shoot_weapon)
             .add_system(reload_weapon.after(shoot_weapon))
             .insert_resource(SelectedWeapon::default())
-            .insert_resource(Weapons::default());
+            .insert_resource(Weapons::default())
+            .insert_resource(MousePosition::default());
     }
 }
 
@@ -78,20 +86,30 @@ fn spawn_weapons(
 }
 
 // TODO: Add fire mode
-fn shoot_weapon(
+pub fn shoot_weapon(
+    mut commands: Commands,
     mouse_buttons: Res<Input<MouseButton>>,
     time: Res<Time>,
     selected_weapon: Res<SelectedWeapon>,
-    mut weapon_ammo: Query<(
+    mouse_position: Res<MousePosition>,
+    mut weapon_query: Query<(
         &mut CurrentAmmo,
         &mut FireDelayTimer,
         &mut Reloading,
         &mut ReloadTimer,
+        &Damage,
     )>,
+    player_transform: Query<&Transform, With<Player>>,
+    mut enemy_query: Query<(Entity, &Transform, &mut Health), (With<Enemy>, Without<Player>)>,
 ) {
     if let Some(weapon_ent) = **selected_weapon {
-        if let Ok((mut current_ammo, mut fire_delay_timer, mut reloading, mut reload_timer)) =
-            weapon_ammo.get_mut(weapon_ent)
+        if let Ok((
+            mut current_ammo,
+            mut fire_delay_timer,
+            mut reloading,
+            mut reload_timer,
+            weapon_damage,
+        )) = weapon_query.get_mut(weapon_ent)
         {
             fire_delay_timer.tick(time.delta());
 
@@ -101,6 +119,25 @@ fn shoot_weapon(
             {
                 **current_ammo -= 1;
                 fire_delay_timer.reset();
+
+                // Calculate damage
+                let player_position = player_transform.single().translation.truncate();
+                let scaled_target_vector = player_position.scaled_vector_to(&mouse_position, 500.0);
+                let b = player_position + scaled_target_vector.rotated_by(FRAC_PI_6);
+                let c = player_position + scaled_target_vector.rotated_by(-FRAC_PI_6);
+
+                for (enemy_ent, enemy_transform, mut enemy_health) in enemy_query.iter_mut() {
+                    let enemy_position = enemy_transform.translation.truncate();
+
+                    if enemy_position.is_in_triangle(&player_position, &b, &c) {
+                        println!("HIT!");
+                        if **weapon_damage >= **enemy_health {
+                            commands.entity(enemy_ent).despawn();
+                        } else {
+                            **enemy_health -= **weapon_damage;
+                        }
+                    }
+                }
 
                 // Auto-reload
                 if **current_ammo == 0 {

@@ -53,4 +53,14 @@ mod tests {
 
         assert!(!point.is_in_triangle(&a, &b, &c))
     }
+
+    #[test]
+    fn real_point_is_in_triangle() {
+        let point = Vec2::new(-659.8707, -613.26624);
+        let a = Vec2::new(-863.4718, -469.50345);
+        let b = Vec2::new(-513.0368, -838.33777);
+        let c = Vec2::new(-982.5402, 25.134003);
+
+        assert!(point.is_in_triangle(&a, &b, &c));
+    }
 }

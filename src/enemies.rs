@@ -16,6 +16,7 @@ const ENEMY_HEALTH: i32 = 25;
 
 const INITIAL_ENEMY_DISTANCE: f32 = 750.0;
 const MAXIMUM_ENEMY_COUNT: usize = 10;
+const ENEMY_SPAWN_DELAY: f64 = 1.0;
 
 // Plugin
 pub struct EnemyPlugin;
@@ -24,7 +25,7 @@ impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_system_set(
             SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(1.0))
+                .with_run_criteria(FixedTimestep::step(ENEMY_SPAWN_DELAY))
                 .with_system(enemy_spawner),
         )
         .add_system(enemy_movement.after(player_movement))
@@ -34,7 +35,7 @@ impl Plugin for EnemyPlugin {
 
 // Systems
 fn enemy_spawner(
-    commands: Commands,
+    mut commands: Commands,
     player_transform: Query<&Transform, With<Player>>,
     enemies: Query<Entity, With<Enemy>>,
 ) {
@@ -55,11 +56,11 @@ fn enemy_spawner(
             0.0,
         );
 
-        spawn_enemy(commands, enemy_translation);
+        spawn_enemy(&mut commands, enemy_translation);
     }
 }
 
-fn spawn_enemy(mut commands: Commands, translation: Vec3) {
+fn spawn_enemy(commands: &mut Commands, translation: Vec3) {
     commands
         .spawn_bundle(SpriteBundle {
             sprite: Sprite {

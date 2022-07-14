@@ -53,4 +53,6 @@ pub struct WeaponText;
 #[derive(Component)]
 pub struct AmmoText;
 #[derive(Component)]
+pub struct EnemyText;
+#[derive(Component)]
 pub struct MainCamera;

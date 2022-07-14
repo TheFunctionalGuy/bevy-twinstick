@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{AmmoText, CurrentAmmo, Health, HealthText, Player, Weapon, WeaponText},
+    components::{
+        AmmoText, CurrentAmmo, Enemy, EnemyText, Health, HealthText, Player, Weapon, WeaponText,
+    },
     enemies::enemy_movement,
     weapons::SelectedWeapon,
 };
@@ -17,7 +19,8 @@ impl Plugin for UiPlugin {
         app.add_startup_system(setup_ui)
             .add_system(update_health.after(enemy_movement))
             .add_system(update_selected_weapon)
-            .add_system(update_current_ammo);
+            .add_system(update_current_ammo)
+            .add_system(update_enemy_count);
     }
 }
 
@@ -113,6 +116,29 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..default()
                 })
                 .insert(AmmoText);
+
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        margin: Rect {
+                            left: Val::Px(5.0),
+                            right: Val::Px(5.0),
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    text: Text::with_section(
+                        "Enemies: %",
+                        TextStyle {
+                            font: font.clone(),
+                            font_size: 30.0,
+                            color: TEXT_COLOR,
+                        },
+                        Default::default(),
+                    ),
+                    ..default()
+                })
+                .insert(EnemyText);
         });
 }
 
@@ -154,4 +180,14 @@ fn update_current_ammo(
             ammo_text.sections[0].value = format!("Weapon: {}", **weapon_ammo);
         }
     }
+}
+
+fn update_enemy_count(
+    enemies: Query<Entity, With<Enemy>>,
+    mut enemy_count_text: Query<&mut Text, With<EnemyText>>,
+) {
+    let mut enemy_count_text = enemy_count_text.single_mut();
+    let enemy_count = enemies.iter().count();
+
+    enemy_count_text.sections[0].value = format!("Enemies: {}", enemy_count);
 }

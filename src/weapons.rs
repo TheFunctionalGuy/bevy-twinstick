@@ -130,7 +130,6 @@ pub fn shoot_weapon(
                     let enemy_position = enemy_transform.translation.truncate();
 
                     if enemy_position.is_in_triangle(&player_position, &b, &c) {
-                        println!("HIT!");
                         if **weapon_damage >= **enemy_health {
                             commands.entity(enemy_ent).despawn();
                         } else {
